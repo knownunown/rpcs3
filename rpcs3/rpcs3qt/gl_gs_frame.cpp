@@ -4,6 +4,15 @@
 #include <QOpenGLContext>
 #include <QOffscreenSurface>
 
+#ifdef __APPLE__
+extern "C" {
+#include <dispatch/dispatch.h>
+#include <objc/objc-runtime.h>
+#include <objc/message.h>
+}
+#include <QThread>
+#endif
+
 gl_gs_frame::gl_gs_frame(const QRect& geometry, const QIcon& appIcon, const std::shared_ptr<gui_settings>& gui_settings)
 	: gs_frame(geometry, appIcon, gui_settings)
 {
@@ -60,6 +69,30 @@ void gl_gs_frame::set_current(draw_context_t ctx)
 
 	const auto context = static_cast<GLContext*>(ctx);
 
+	#ifdef __APPLE__
+	if (!context->owner) [[unlikely]] create();
+	else if (!context->handle->isValid()) [[unlikely]] context->handle->create();
+
+	typedef struct {
+		GLContext* glc;
+		bool ok;
+	} _ctx_t;
+	_ctx_t lol = { .glc = context, .ok = false };
+	dispatch_async_and_wait_f(dispatch_get_main_queue(), &lol, [](void *p) -> void {
+		auto ctx = static_cast<_ctx_t*>(p);
+		ctx->ok = ctx->glc->handle->makeCurrent(ctx->glc->surface);
+	});
+
+	id nsogl = nullptr;
+	QVariant hdl = context->handle->nativeHandle();
+	QMetaType::construct(hdl.userType(), &nsogl, hdl.constData());
+	typedef void (*msgsend_t)(id, SEL);
+	auto msgSend = reinterpret_cast<msgsend_t>(objc_msgSend);
+	msgSend(nsogl, sel_registerName("makeCurrentContext")); // workaround catalina / big sur ogl
+															// thread limitation
+
+	if (lol.ok) context->handle->moveToThread(QThread::currentThread()); // todo: necessary?
+	#else
 	if (!context->handle->makeCurrent(context->surface))
 	{
 		if (!context->owner)
@@ -76,6 +109,9 @@ void gl_gs_frame::set_current(draw_context_t ctx)
 			fmt::throw_exception("Could not bind OpenGL context" HERE);
 		}
 	}
+
+	#endif
+
 }
 
 void gl_gs_frame::delete_context(draw_context_t ctx)

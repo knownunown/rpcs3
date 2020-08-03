@@ -1091,7 +1091,7 @@ enum
 };
 
 
-enum Method : u32
+enum rsx_method : u32
 {
 	/*
 	CELL_GCM_METHOD_FLAG_NON_INCREMENT = 0x40000000,

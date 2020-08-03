@@ -72,3 +72,7 @@
 	url = https://github.com/RipleyTom/wolfssl.git
 	ignore = dirty
 
+[submodule "3rdparty/glew"]
+	path = 3rdparty/glew
+	url = https://github.com/Perlmint/glew-cmake.git
+	ignore = dirty

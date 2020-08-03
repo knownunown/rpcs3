@@ -1,4 +1,4 @@
-#include "stdafx.h"
+﻿#include "stdafx.h"
 #include "OpenGL.h"
 
 #ifdef _WIN32
@@ -31,7 +31,7 @@ void gl::init()
 #undef WGL_PROC
 #undef OPENGL_PROC2
 #endif
-#ifdef __unix__
+#if defined(__unix__) || defined(__APPLE__)
 	glewExperimental = true;
 	glewInit();
 #ifdef HAVE_X11
