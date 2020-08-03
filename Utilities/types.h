@@ -130,7 +130,7 @@ using s16 = std::int16_t;
 using s32 = std::int32_t;
 using s64 = std::int64_t;
 
-#if __APPLE__
+#if __APPLE__ and 0 // FIXME ANDREW: macOS Big Sur's libc++ supports this
 namespace std
 {
 	template <typename T, typename = std::enable_if_t<std::is_unsigned_v<T>>>

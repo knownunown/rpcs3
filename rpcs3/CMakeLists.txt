@@ -127,6 +127,8 @@ endif()
 # Copy icons to executable directory
 if(APPLE)
 	add_custom_command(TARGET rpcs3 POST_BUILD
+			COMMAND ${DSYMUTIL_COMMAND} $<TARGET_FILE:rpcs3>)
+	add_custom_command(TARGET rpcs3 POST_BUILD
 			COMMAND ${CMAKE_COMMAND} -E copy
 			${RPCS3_SRC_DIR}/rpcs3.icns $<TARGET_FILE_DIR:rpcs3>/../Resources/rpcs3.icns
 			COMMAND ${CMAKE_COMMAND} -E copy_directory

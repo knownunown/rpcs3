@@ -572,7 +572,12 @@ struct MemoryManager : llvm::RTDyldMemoryManager
 
 	llvm::JITSymbol findSymbol(const std::string& name) override
 	{
+		#ifdef __APPLE__
+		auto lnkname = name.substr(1);
+		auto& addr = m_link[lnkname];
+		#else
 		auto& addr = m_link[name];
+		#endif
 
 		// Find function address
 		if (!addr)
